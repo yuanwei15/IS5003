@@ -1,0 +1,347 @@
+  <html>
+    <head>
+	<title> SQL Wizard </title>
+    <meta charset="utf-8">
+    <meta content="width=device-width,initial-scale=1,minimal-ui" name="viewport">
+    <link rel="stylesheet" href="https://unpkg.com/vue-material@beta/dist/vue-material.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/vue-material@beta/dist/theme/black-green-light.css">
+	<link rel="stylesheet" href="https://uistuff.s3.amazonaws.com/main.css" />
+	<link rel="stylesheet" href="https://uistuff.s3.amazonaws.com/font-awesome.min.css" />
+	<meta property="og:url" content="https://sm1yj1zl28.execute-api.us-east-1.amazonaws.com/default/one" />
+	<meta property="og:type" content="website" />
+	<meta property="og:title" content="SQL Wizard - Challenge yourself to our SQL quizes" />
+	<meta property="og:description" content="Challenge yourself on our SQL quizes to see how will you do." />
+	<meta property="og:image" content="https://i.ibb.co/2Svr16s/sqlogo.jpg" />
+    <script src="https://kit.fontawesome.com/c5aa2c1a90.js" crossorigin="anonymous"></script>
+	<script src="https://unpkg.com/vue"></script>
+    <script src="https://unpkg.com/vue-material@beta"></script>
+	<script type="text/javascript">
+		function showSpoiler(obj)
+		{
+			var inner = obj.parentNode.getElementsByTagName("div")[0];
+			if (inner.style.display == "none")
+				inner.style.display = "";
+			else
+			inner.style.display = "none";
+		}
+    </script>
+	<!-- Global site tag (gtag.js) - Google Analytics -->
+	<script async src="https://www.googletagmanager.com/gtag/js?id=UA-147552064-1"></script>
+	<script>
+		window.dataLayer = window.dataLayer || [];
+		function gtag(){dataLayer.push(arguments);}
+		gtag('js', new Date());
+		gtag('config', 'UA-147552064-1');
+	</script>
+	</head>
+    <body>
+		<header id="header">
+			<a class="logo">Wizard Inc</a>
+		</header>
+		<section id="banner">
+			<div class="inner">
+				<h2>SQL Wizard</h2>
+			</div>
+		</section>
+		<div id="app">
+            <md-tabs>
+                <md-tab v-for="question in questions" :key=question.name v-bind:md-label=question.name+question.status>
+                    <doctest-activity v-bind:layout-things=question.layoutItems v-bind:question-name=question.name  @questionhandler="toggleQuestionStatus"/>
+                </md-tab>
+            </md-tabs>
+		</div>
+	</body> 
+	
+    <script>
+	
+    Vue.use(VueMaterial.default)
+    
+    Vue.component('doctest-activity', {
+        props: ['layoutThings', 'questionName'],
+        data: function () {
+            return {
+            answer:{jsonFeedback:'',htmlFeedback:'',textFeedback:'',isComplete:false},
+            layoutItems: this.layoutThings
+        }
+        },
+        methods: {
+            postContents: function () {
+            // comment: leaving the gatewayUrl empty - API will post back to itself
+            this.$set(this, 'answer', {jsonFeedback:'',htmlFeedback:'',textFeedback:'',isComplete:false});
+            const gatewayUrl = '';
+			fetch(gatewayUrl, {
+        method: "POST",
+        headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+        },
+            body: JSON.stringify({
+					shown:{0:""},
+					userToken:"EXTERNAL",
+					hidden:{0:this.layoutItems[2].answer},
+					editable:{0:this.layoutItems[1].vModel}})
+        }).then(response => {
+			return response.json()
+        }).then(data => {
+            this.answer = JSON.parse(JSON.stringify(data))
+            return this.$emit('questionhandler',{data, questionName:this.questionName})
+            })
+         },
+		},
+        template: 
+        `
+			<section class="wrapper">
+				<div class="inner">
+					<h2><u>{{layoutItems[0].header}}</h2></u>
+					<md-card>
+						<div class = "inner"> 
+							<br>
+							<i class="fas fa-question-circle fa-3x"></i>
+							<h3> <b> TUTORIAL/ QUESTION </b><h3>
+							<br> 
+							<div v-html="layoutItems[0].vModel"></div>
+						<div class="spoiler">
+							<br>
+							<div class ="inner">
+								<input type="button" onclick="showSpoiler(this);" value="Show Hint">
+								<div style="display:none;">
+								<div v-html="layoutItems[2].answer"></div>
+							</div>
+							</div>
+						</div> <br>
+						</div>
+					</md-card>
+				</div>
+	
+				<div class="inner">
+                    <md-card>
+					<div class = "inner"> 
+					<br>
+					<i class="fas fa-lightbulb fa-3x"></i>
+					<h3><b>ANSWER</b></h3>
+					<md-card-content>
+                        <md-field>
+                            <md-textarea v-model="layoutItems[1].vModel"></md-textarea>
+                        </md-field>
+                    </md-card-content>
+                            <md-card-media>
+                                &nbsp;<md-button v-on:click="postContents">Submit</md-button>
+                            </md-card-media>
+					<br>
+					</div>		 
+					</md-card>
+				</div>
+				<div class="inner">
+					<md-card>
+					<div class = "inner">
+					<br>
+					<i class="fas fa-poll fa-3x"></i>
+					<h3><b>RESULT</b></h3>
+                    <div v-html="answer.htmlFeedback"></div>
+					<br>
+					</md-card>
+				</div>
+			<div class="inner">
+					<div class="content">
+						<div  id = "share-buttons" align="center">
+							<br> Enjoying SQL Wizard? Share it with your friends! 
+							<a href="mailto:?Subject=SQL Wizard - Great Fun!&amp;Body=I%20think%20you%20should%20give%20this%20a%20shot!%20 https://sm1yj1zl28.execute-api.us-east-1.amazonaws.com/default/one">
+							<img src="https://simplesharebuttons.com/images/somacro/email.png" alt="Email" title="Share on Email"/>
+							</a>
+							<a href="http://www.facebook.com/sharer.php?u=https://sm1yj1zl28.execute-api.us-east-1.amazonaws.com/default/one" target="_blank">
+							<img src="https://simplesharebuttons.com/images/somacro/facebook.png" alt="Facebook" title="Share on Facebook"/>
+							</a>
+							<a href="http://www.linkedin.com/shareArticle?mini=true&amp;url=https://sm1yj1zl28.execute-api.us-east-1.amazonaws.com/default/one" target="_blank">
+							<img src="https://simplesharebuttons.com/images/somacro/linkedin.png" alt="LinkedIn" title="Share on LinkedIn"/>
+							</a>
+							<a href="https://twitter.com/share?url=https://sm1yj1zl28.execute-api.us-east-1.amazonaws.com/default/one;hashtags=sqlwizard" target="_blank">
+							<img src="https://simplesharebuttons.com/images/somacro/twitter.png" alt="Twitter" title="Share on Twitter"/>
+							</a>
+							<br>
+							<br>
+						</div>
+					</div>
+				</div>
+
+			</section>
+		`
+    })
+    
+    new Vue({
+        el: '#app',
+        data:function () {
+            return {
+            questions:[
+                {name:"Q1", layoutItems: [
+					{header:"Question 1", subHeader:'', vModel:'What is a relational database? <blockquote> A relational database is a set of formally described tables from which data can be accessed or reassembled in many different ways without having to reorganize the database tables. </blockquote> Each table is defined as a relation which consists of rows (records) and columns (attribute of a field). For a table to qualify as a relation, it must fulfil the following requirements: <br> <br> <ol> <li> Every attribute value must be atomic (not multivalued, not composite) </li><li>Every row must be unique (cannot have two rows with exactly the same values for all their fields)</li> <li> Attributes (columns) must have unique names </li><li> The order of the rows and columns must be irrelevant </li><li> It must have a unique name </li></ol><br>The language SQL (structured query language) was developed to work with relational databases. In the relational model, a table cannot contain duplicate rows, because that would create ambiguities in retrieval. To ensure uniqueness, each table should have a column (or a set of columns), called primary key that uniquely identifies every records of the table.  <br> <br> For example, an unique number customerID can be used as the primary key for the Customers table; accountCode for Accounts table; userID for User table.  A primary key is called a simple key if it is a single column; it is called a composite key if it is made up of several columns. The primary key is also used to reference other tables – they will therefore be known as foreign key. <br><br> <img src="https://questiontutorial.s3.amazonaws.com/q0table.jpg"> <br><br> The SQLite SELECT statement is used to retrieve records from one or more tables. The simplest syntax of a SELECT statement is: <br> <blockquote> SELECT expressions <br> FROM tables <br> [WHERE conditions] </blockquote> In order to return the results with all the columns (attributes) of a table, we can represent it with an asterisk, *. For example, <br> <blockquote> SELECT * <br> FROM tables <br> [WHERE conditions] </blockquote><b> From the given data set as shown in the screenshot below, write a SELECT query that returns the column of records that represent the primary key of the table “Walmart_Store_Openings”. </b><br><img src ="https://questiontutorial.s3.amazonaws.com/q1table.jpg"> <br> <br> Download Table Walmart_Store_Openings from <a href="https://raw.githubusercontent.com/plotly/datasets/master/1962_2006_walmart_store_openings.csv" title="Table Walmart_Store_Openings"><u>here</u></a>'},
+					{header:"Answer", subHeader:'Your code goes below', vModel:"SELECT"},
+					{answer: "SELECT storenum FROM Walmart_Store_Openings"}
+					], status:" 🔴"},
+                
+				{name:"Q2", layoutItems: [
+					{header:"Question 2", subHeader:'', vModel:'<b>Write a SELECT query that returns records with the following columns: <br> <br> <ol><li> Storenum </li> <li>OPENDATE</li><li>Type_store</li><li>YEAR</li></ol></b> Download Table Walmart_Store_Openings from <a href="https://raw.githubusercontent.com/plotly/datasets/master/1962_2006_walmart_store_openings.csv" title="Table Walmart_Store_Openings"><u>here</u></a>'},
+					{header:"Answer", subHeader:'Your code goes below', vModel:"SELECT"},
+					{answer: "SELECT storenum, OPENDATE, Type_store, YEAR FROM Walmart_Store_Openings"}
+					], status:" 🔴"},
+				
+                {name:"Q3", layoutItems: [
+					{header:"Question 3", subHeader:'', vModel:'Data may often be stored in an unspecified order. This implies that there is always the possibility that the rows are not in any particular order when they are inserted. If we were to use the SELECT statement query, the returned rows of results are not in any specific order. In order to sort the results set, we may include an ‘ORDER BY’ clause to the SELECT statement query. ASC keyword arranges the list in ascending order and DESC keyword arranges the list in descending order.  <br> <br> For example: <blockquote> SELECT<br>&nbsp;&nbsp;&nbsp;&nbsp;   select_list <br>FROM<br>&nbsp;&nbsp;&nbsp;&nbsp; table <br>ORDER BY<br>&nbsp;&nbsp;&nbsp;&nbsp;column_1 ASC,&nbsp;&nbsp;&nbsp;&nbsp;  column_2 DESC</blockquote> <br> <b> Write a SELECT statement query with a ORDER BY clause to return the list of results with the attributes OPENDATE, STREETADDR, STRCITY, STRSTATE, ZIPCODE, type_store. The returned result set should be sorted such that the newest record is at the top of the returned list of results. </b><br> <br>Download Table Walmart_Store_Openings from <a href="https://raw.githubusercontent.com/plotly/datasets/master/1962_2006_walmart_store_openings.csv" title="Table Walmart_Store_Openings"><u>here</u></a>'},
+					{header:"Answer", subHeader:'Your code goes below', vModel:"SELECT"},
+					{answer: "SELECT OPENDATE, STREETADDR, STRCITY, STRSTATE, ZIPCODE, type_store FROM Walmart_Store_Openings ORDER BY OPENDATE DESC"}
+					], status:" 🔴"},
+				
+                {name:"Q4", layoutItems: [
+					{header:"Question 4", subHeader:'', vModel:'<b>Are you able to sort the result set in ASC or DESC order based on a column that is not part of your returned select list?</b>'},
+					{header:"Answer", subHeader:'Your code goes below', vModel:"YES OR NO"},
+					{answer: "NO"}
+					], status:" 🔴"},
+				
+				{name:"Q5", layoutItems: [
+					{header:"Question 5", subHeader:'', vModel:'There may be times when the number of returned rows should be constrained to better analyse the results. To do this, we can make use of the LIMIT constraint. The syntax is as follow:<blockquote> SELECT<br>&nbsp;&nbsp;&nbsp;&nbsp;column_list<br>FROM<br>&nbsp;&nbsp;&nbsp;&nbsp; table<br>LIMIT row_count;</blockquote> This LIMIT clause can be used in conjunction with the ORDER BY clause.The ORDER BY clause needs to be entered before the LIMIT clause in the SELECT statement. The results are always sorted first before retrieving the number of rows as specified in the LIMIT clause.<br><br><b>Write a SELECT query that returns all columns of the first 10 stores that were opened by WALMART. Clue: Order the opening dates based on the data stored in the column ‘OPENDATE’</b><br><br> Download Table Walmart_Store_Openings from <a href="https://raw.githubusercontent.com/plotly/datasets/master/1962_2006_walmart_store_openings.csv" title="Table Walmart_Store_Openings"><u>here</u></a>'},
+					{header:"Answer", subHeader:'Your code goes below', vModel:"SELECT"},
+					{answer: "SELECT * FROM Walmart_Store_Openings ORDER BY OPENDATE DESC LIMIT 10"}
+					], status:" 🔴"},
+					
+				{name:"Q6", layoutItems: [
+					{header:"Question 6", subHeader:'', vModel:'To do a count of the returned results, we can make use of the following syntax:<blockquote>SELECT<br>&nbsp;&nbsp;&nbsp;&nbsp;COUNT(*)<br>FROM<br>&nbsp;&nbsp;&nbsp;&nbsp;table;</blockquote>The COUNT function is often used together with the GROUP BY and HAVING clauses.<br><br>The GROUP BY clause enables us to group the returned rows into summary rows by values of one or more columns.<br> <br>The HAVING clause specifies a search condition for a group. The HAVING clause should always be used with the GROUP BY clause. If not, the system will throw an exception error.<br><br>An illustration of the syntax is as follow:<blockquote>SELECT<br>&nbsp;&nbsp;&nbsp;&nbsp;column_1, <br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;column_2,<br>&nbsp;&nbsp;&nbsp;&nbsp;aggregate_function (column_3)<br>FROM<br>&nbsp;&nbsp;&nbsp;&nbsp;table<br>GROUP BY<br>&nbsp;&nbsp;&nbsp;&nbsp;column_1,<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;column_2<br>HAVING<br>&nbsp;&nbsp;&nbsp;&nbsp;search_condition;</blockquote><b>Write a SELECT statement to retrieve the total number of rows in the table Walmart_Store_Openings</b><br><br> Download Table Walmart_Store_Openings from <a href="https://raw.githubusercontent.com/plotly/datasets/master/1962_2006_walmart_store_openings.csv" title="Table Walmart_Store_Openings"><u>here</u></a>'},
+					{header:"Answer", subHeader:'Your code goes below', vModel:"SELECT"},
+					{answer: "SELECT COUNT(*) FROM Walmart_Store_Openings"}
+					], status:" 🔴"},
+				
+				{name:"Q7", layoutItems: [
+					{header:"Question 7", subHeader:'', vModel:'<b>Write a SELECT statement to count the total number of store openings for each type of store.</b><br><br> Clue: The returned table of results should have 2 columns; the type_store and the count of store openings for each returned result in the column type_store.<br><br> Download Table Walmart_Store_Openings from <a href="https://raw.githubusercontent.com/plotly/datasets/master/1962_2006_walmart_store_openings.csv" title="Table Walmart_Store_Openings"><u>here</u></a>'},
+					{header:"Answer", subHeader:'Your code goes below', vModel:"SELECT"},
+					{answer: "SELECT type_store, COUNT(storenum) FROM Walmart_Store_Openings GROUP BY type_store"}
+					], status:" 🔴"},
+				
+				{name:"Q8", layoutItems: [
+					{header:"Question 8", subHeader:'', vModel:'<b>Write a SELECT statement to count the total number of store openings for each year.</b><br><br>Clue: The returned table of results should have 2 columns; the YEAR and the count of store openings for each returned result in the column YEAR.<br><br> Download Table Walmart_Store_Openings from <a href="https://raw.githubusercontent.com/plotly/datasets/master/1962_2006_walmart_store_openings.csv" title="Table Walmart_Store_Openings"><u>here</u></a>'},
+					{header:"Answer", subHeader:'Your code goes below', vModel:"SELECT"},
+					{answer: "SELECT YEAR, COUNT(storenum) FROM Walmart_Store_Openings GROUP BY YEAR"}
+					], status:" 🔴"},
+				
+				{name:"Q9", layoutItems: [
+                {header:"Question 9", subHeader:'', vModel:'<b>Write a SELECT statement to count the total number of store openings for each type of store in the year 1995.</b><br><br> Download Table Walmart_Store_Openings from <a href="https://raw.githubusercontent.com/plotly/datasets/master/1962_2006_walmart_store_openings.csv" title="Table Walmart_Store_Openings"><u>here</u></a>'},
+                {header:"Answer", subHeader:'Your code goes below', vModel:"SELECT"},
+                {answer: "SELECT type_store,YEAR, COUNT(storenum) FROM Walmart_Store_Openings GROUP BY type_store,YEAR HAVING YEAR = 1995"}
+                ], status:" 🔴"},
+				
+                {name:"Q10", layoutItems: [
+                {header:"Question 10", subHeader:'', vModel:'<b>Are we allowed to use the HAVING clause without the GROUP BY clause?</b>'},
+                {header:"Answer", subHeader:'Your code goes below', vModel:"YES OR NO"},
+                {answer: "NO"}
+                ], status:" 🔴"}
+            ]
+        }
+        },
+         methods: {
+            toggleQuestionStatus (response) {
+                const {data, questionName} = response
+                if (data.htmlFeedback) {
+                    const searchText = data.htmlFeedback
+                    searchText.search(/b2d8b2/) !== -1 ?
+                        searchText.search(/#ff9999/) == -1 ?
+                        this.questions.find(item => item.name === questionName).status = " ✔️"
+						:
+                        this.questions.find(item => item.name === questionName).status = " 🤨"
+                    :
+                    this.questions.find(item => item.name === questionName).status = " 🔴"
+                }
+			}
+        }
+      })
+    </script>
+    <style type="text/css">
+ 		#share-buttons img {
+		width: 35px;
+		padding: 5px;
+		border: 0;
+		box-shadow: 0;
+		display: inline;
+		}
+ </style>
+	<style lang="scss" scoped>
+    .md-card {
+        width: 90%;
+        margin: 20px;
+        display: inline-block;
+        vertical-align: top;
+        min-height:200px
+    }
+    .md-card-content {
+        padding-bottom: 10px !important;
+    }
+    button {
+        margin: 10px;
+        width:150px;
+        height:40px
+    }
+    #cardGroupCreator {
+        display:flex;
+        flex-direction:column;
+        padding-right: 0px
+    }
+    #cardGroupPreview .md-card {
+        width: 90%;
+    }
+    #cardGroupPreview{
+        padding-left: 0px
+    }
+    #cardGroupPreview .md-tab{
+        height:100%
+    }
+    textarea {
+        font-size: 1rem !important;
+    }
+    .md-tabs{
+        width:100%;
+    }
+    .md-tab{
+        overflow-x: auto;
+    }
+    .md-tab::-webkit-scrollbar {
+    width: 0px;
+    }
+    html {
+        width:95%;
+        margin:auto;
+        mix-blend-mode: darken;
+		bgcolor="#E6E6FA"
+    }
+    h1{
+        padding:20px;
+        margin:auto;
+        text-align: center
+    }
+    .md-content{
+        min-height:100px
+    }
+    .md-tabs-container, .md-tabs-container .md-tab textarea, .md-tabs-content{
+        height:100% !important
+    }
+    .md-field{
+        margin:0px;
+        padding:0px
+    }
+    .md-tabs-navigation{
+        justify-content:center !important
+    }
+    .md-card-media{
+        width:400px !important
+    }
+    .md-button{
+        margin:10px !important;
+        width:80% !important;
+        display:block
+    }
+    .md-field:after{
+        height:0px
+    }
+    table{
+        border-collapse:collapse
+    }
+    td {
+        border:1px solid black
+    }
+    </style>
+    </html>
